@@ -6,6 +6,12 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
+    path: Assets/Scenes/Menu.unity
+    guid: 52ccf8117d46ee74396796fd29bea740
+  - enabled: 1
     path: Assets/Scenes/MissileCommandGame.unity
     guid: 2cda990e2423bbf4892e6590ba056729
+  - enabled: 1
+    path: Assets/Scenes/EndGame.unity
+    guid: cceef28d55b8b734d9f842a89c42f1ee
   m_configObjects: {}
