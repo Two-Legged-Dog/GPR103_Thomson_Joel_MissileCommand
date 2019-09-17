@@ -23,19 +23,19 @@ public class CursorInput : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(Input.GetMouseButtonDown(0) && gameController.missilesBattery1 > 0)
+        if(Input.GetMouseButtonDown(0) && gameController.missilesBattery1 > 0 && !gameController.isGameOver)
         {
             Instantiate(missile, batteries[0].transform.position, Quaternion.identity);
             Debug.Log("Launch Battery 1");
             gameController.missilesBattery1--;
         }
-        if (Input.GetMouseButtonDown(2) && gameController.missilesBattery2 > 0)
+        if (Input.GetMouseButtonDown(2) && gameController.missilesBattery2 > 0 && !gameController.isGameOver)
         {
             Instantiate(missile, batteries[1].transform.position, Quaternion.identity);
             Debug.Log("Launch Battery 2");
             gameController.missilesBattery2--;
         }
-        if (Input.GetMouseButtonDown(1) && gameController.missilesBattery3 > 0)
+        if (Input.GetMouseButtonDown(1) && gameController.missilesBattery3 > 0 && !gameController.isGameOver)
         {
             Instantiate(missile, batteries[2].transform.position, Quaternion.identity);
             Debug.Log("Launch Battery 3");

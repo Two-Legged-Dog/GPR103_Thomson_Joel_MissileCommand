@@ -10,25 +10,26 @@ public class EnemyMissile : MonoBehaviour
 
     private GameController gameController;
 
+    public float lineDrawSpeed = 6f;
+
     Vector3 target;
 
-    
+    private float randomTimer;
+    [SerializeField] private GameObject missilePrefab;
 
-
-    // Start is called before the first frame update
     void Start()
     {
         gameController = GameObject.FindObjectOfType<GameController>();
         groundBuildings = GameObject.FindGameObjectsWithTag("GroundBuildings");
-        
         target = groundBuildings[Random.Range(0, groundBuildings.Length)].transform.position;
-
         speed = gameController.enemySpeed;
-        Debug.Log(speed);
-
+        
+        //Split Missile
+        randomTimer = Random.Range(0.1f, 50f);
+        randomTimer = randomTimer / gameController.enemySpeed;
+        Invoke("SplitMissile", randomTimer);
     }
 
-    // Update is called once per frame
     void Update()
     {
         transform.position = Vector2.MoveTowards(transform.position, target, speed * Time.deltaTime);
@@ -63,5 +64,14 @@ public class EnemyMissile : MonoBehaviour
     {
         Instantiate(explosionPrefab, transform.position, Quaternion.identity);
         Destroy(gameObject);
+    }
+    private void SplitMissile()
+    {
+        float yVal = Camera.main.ViewportToWorldPoint(new Vector3(0, .25f, 0)).y;
+        if (transform.position.y >= yVal)
+        {
+            gameController.enemyMissilesLeftInRound++;
+            Instantiate(missilePrefab, transform.position, Quaternion.identity);
+        }
     }
 }

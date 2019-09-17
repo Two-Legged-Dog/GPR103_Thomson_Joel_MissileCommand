@@ -7,25 +7,32 @@ using UnityEngine.SceneManagement;
 public class GameController : MonoBehaviour
 {
     [SerializeField] private GameObject endRoundPanel;
-
+    [SerializeField] private GameObject cityPrefab;
+    [SerializeField] private GameObject highscorePanel;
+    [SerializeField] private TMP_InputField newHighscoreInitials;
     EnemyMissileSpawn enemyMissileSpawn;
 
     public int score = 0;
+    private int citiesRespawned = 0;
     public int level = 1;
+    [SerializeField] private GameObject[] cityPositions;
+
     public float enemySpeed = 5f;
     public int citiesLeft = 0;
     [SerializeField] private float enemySpeedMultiplier = 2f;
-    public int missilesBattery1 = 6;
-    public int missilesBattery2 = 6;
-    public int missilesBattery3 = 6;
+    public int missilesBattery1 = 10;
+    public int missilesBattery2 = 10;
+    public int missilesBattery3 = 10;
     public int totalPlayerMissiles;
     private int enemyMissilesThisRound = 20;
-    private int enemyMissilesLeftInRound = 0;
+    public int enemyMissilesLeftInRound = 0;
     [SerializeField] private int missileEndOfRoundPoints = 5;
     [SerializeField] private int cityEndOfRoundPoints = 100;
 
     private int missileDestroyPoints = 25;
 
+    private MenuManager myMenuManager;
+    private ScoreManager myScoreManager;
 
     [SerializeField] private TextMeshProUGUI scoreText;
     [SerializeField] private TextMeshProUGUI levelText;
@@ -36,6 +43,7 @@ public class GameController : MonoBehaviour
     [SerializeField] private TextMeshProUGUI totalBonusText;
 
     private bool roundOver = false;
+    public bool isGameOver = false;
 
     // Start is called before the first frame update
     void Start()
@@ -43,6 +51,8 @@ public class GameController : MonoBehaviour
         citiesLeft = GameObject.FindObjectsOfType<City>().Length;
         Debug.Log(citiesLeft);
         enemyMissileSpawn = GameObject.FindObjectOfType<EnemyMissileSpawn>();
+        myMenuManager = GameObject.FindObjectOfType<MenuManager>();
+        myScoreManager = GameObject.FindObjectOfType<ScoreManager>();
 
         UpdateScore();
         UpdateLevel();
@@ -54,15 +64,24 @@ public class GameController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        
+        if(citiesLeft <= 0 )
+        {
+            isGameOver = true;
+            if(myScoreManager.IsThisANewHighscore(score))
+            {
+                highscorePanel.SetActive(true);
+            }
+            else
+            {
+                SceneManager.LoadScene("EndGame");
+            }
+        }
         totalPlayerMissiles = missilesBattery1 + missilesBattery2 + missilesBattery3;
-        if (enemyMissilesLeftInRound <= 0 && !roundOver)
+        if (enemyMissilesLeftInRound <= 0 && !roundOver && !isGameOver)
         {
             roundOver = true;
             StartCoroutine(EndOfRound());
-        }
-        if(citiesLeft <= 0 )
-        {
-            SceneManager.LoadScene("EndGame");
         }
     }
 
@@ -119,6 +138,28 @@ public class GameController : MonoBehaviour
 
         int totalBonus = leftOverCityBonus + leftOverMissileBonus;
 
+        //Score multiplier for rounds
+        if(level >=3 && level < 5)
+        {
+            totalBonus *= 2;
+        }
+        else if (level >= 5 && level < 7)
+        {
+            totalBonus *= 3;
+        }
+        else if (level >= 7 && level < 9)
+        {
+            totalBonus *= 4;
+        }
+        else if (level >= 9 && level < 11)
+        {
+            totalBonus *= 5;
+        }
+        else if (level >= 11)
+        {
+            totalBonus *= 6;
+        }
+
         leftOverMissileText.text = "Left over missile bonus: " + leftOverMissileBonus;
         leftOverCityText.text = "Left over city bonus: " + leftOverCityBonus;
         totalBonusText.text = "Total Bonus: " + totalBonus;
@@ -126,6 +167,23 @@ public class GameController : MonoBehaviour
         score += totalBonus;
         UpdateScore();
 
+
+        //Add city if 10k
+        if (score / 10000 > citiesRespawned)
+        {
+            foreach(GameObject go in cityPositions)
+            {
+                if (go.GetComponentInChildren<City>() == null)
+                {
+                    Instantiate(cityPrefab, go.transform.position, Quaternion.identity, go.transform);
+                    citiesLeft++;
+                    citiesRespawned++;
+                    break;
+                }
+            }
+        }
+
+        //Countdown for in between rounds
         countdownText.text = "3";
         yield return new WaitForSeconds(1f);
         countdownText.text = "2";
@@ -142,8 +200,11 @@ public class GameController : MonoBehaviour
 
         StartRound();
         UpdateLevel();
-
-
+    }
+    public void SubmitButton()
+    {
+        myScoreManager.AddNewHighscore(new HighscoreEntry { score = this.score, name = newHighscoreInitials.text });
+        SceneManager.LoadScene(0);
 
     }
 }
